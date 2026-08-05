@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="org.example.myblog.mapper.ArticleMapper">
+
+    <insert id="insertArticle" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO articles (title, content,status,category,cover_url)
+        VALUES (#{title}, #{content},#{status},#{category},#{coverUrl})
+    </insert>
+
+    <update id="updateArticleById" parameterType="Article">
+        UPDATE articles
+        SET
+            title = #{title},
+            content = #{content},
+            status = #{status},
+            category = #{category},
+            cover_url = #{coverUrl},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="queryArticleListDetail" parameterType="org.example.myblog.common.page.PageQuery" resultType="Article">
+        SELECT id, title, content,create_time,status,category,cover_url
+        FROM articles
+        <where>
+            <if test="includeDraft == null or includeDraft == false">
+                status = 1
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="queryArticleList" parameterType="org.example.myblog.common.page.PageQuery" resultType="Article">
+        SELECT id, title,create_time,status,category,cover_url
+        FROM articles
+        <where>
+            <if test="includeDraft == null or includeDraft == false">
+                status = 1
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="queryArticleDetailById" resultType="Article">
+        SELECT id, title, content,create_time,status,category,cover_url
+        FROM articles
+        WHERE id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM articles
+        WHERE id = #{id};
+    </delete>
+
+    <select id="countArticles" resultType="int">
+        SELECT COUNT(*) FROM articles
+        WHERE status = 1
+    </select>
+
+</mapper>

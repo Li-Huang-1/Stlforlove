@@ -1,0 +1,43 @@
+# 服务器配置
+server:
+  port: 8081
+  servlet:
+    context-path:
+
+# 数据库配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:myblog}?useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+
+# 图片上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# GitHub 图床配置
+github:
+  token: ${GITHUB_TOKEN:}
+  username: ${GITHUB_USERNAME:}
+  repo: ${GITHUB_REPO:my-blog-images}
+  branch: ${GITHUB_BRANCH:main}
+
+# MyBatis配置
+mybatis:
+# Mapper XML文件位置
+  mapper-locations: classpath:mapper/*.xml
+  # 实体类别名包路径
+  type-aliases-package: org.example.myblog.domain.entity
+  # 配置项
+  configuration:
+    # 开启下划线转驼峰
+    map-underscore-to-camel-case: true
+    # 开启日志
+    log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
+
+pagehelper:
+  helper-dialect: mysql
