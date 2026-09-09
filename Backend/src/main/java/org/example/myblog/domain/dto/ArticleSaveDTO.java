@@ -6,6 +6,7 @@ import lombok.Data;
 public class ArticleSaveDTO {
     private String title;
     private String content;
+    private String type;
     private Integer status;
     private String category;
     private String coverUrl;

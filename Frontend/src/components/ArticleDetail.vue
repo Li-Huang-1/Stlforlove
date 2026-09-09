@@ -14,23 +14,23 @@
         </div>
       </header>
       <div class="article-content ql-editor" v-html="article.content"></div>
-      <footer class="article-footer">
-        <button class="back-btn" @click="goBack">
-          <span>←</span>
-          <span>返回首页</span>
-        </button>
-      </footer>
     </div>
     <div v-else class="empty">
       <div class="empty-icon">📭</div>
       <p>文章不存在或已被删除</p>
       <button class="empty-btn" @click="goBack">返回首页</button>
     </div>
+    <!-- 返回首页按钮：从文章卡片底部提取，absolute 固定在详情页左下角 -->
+    <button v-if="article && !loading" class="back-btn" @click="goBack">
+      <span class="back-arrow">←</span>
+      <span>返回首页</span>
+    </button>
   </div>
 </template>
 
 <script>
 import request from '@/utils/request'
+import { setupLazyImages, teardownLazyImages } from '@/directives/lazy'
 
 export default {
   name: 'ArticleDetail',
@@ -48,6 +48,10 @@ export default {
   mounted() {
     this.fetchArticle()
   },
+  beforeUnmount() {
+    // 组件卸载前取消正文图片的懒加载观察，防止内存泄漏
+    teardownLazyImages(this.$el.querySelector('.article-content'))
+  },
   methods: {
     async fetchArticle() {
       this.loading = true
@@ -57,6 +61,10 @@ export default {
           method: 'get'
         })
         this.article = res.data || res
+        // 正文通过 v-html 渲染，DOM 更新后对其中的图片批量启用懒加载
+        this.$nextTick(() => {
+          setupLazyImages(this.$el.querySelector('.article-content'))
+        })
       } catch (error) {
         console.error('加载失败:', error)
       } finally {
@@ -193,6 +201,17 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* 正文图懒加载占位态：img 元素撑出固定占位区域并带浅底，占位 gif 以原始像素尺寸居中显示
+   （object-fit:none，不放大、不发虚），避免加载前布局塌陷；
+   真实图加载完成后 lazy-loading 类由懒加载逻辑自动移除 */
+.article-content :deep(img.lazy-loading) {
+  width: 100%;
+  height: 240px;
+  object-fit: none;
+  background: rgba(37, 99, 235, 0.05);
+  border-radius: 12px;
+}
+
 .article-content :deep(code) {
   background: rgba(37, 99, 235, 0.08);
   padding: 3px 8px;
@@ -239,6 +258,12 @@ export default {
   margin-bottom: 8px !important;
 }
 
+/* 无序列表圆点加粗：Quill 通过 .ql-ui::before 的 '\2022' 渲染圆点，
+   这里提升字重让圆点更粗更清晰 */
+.article-content.ql-editor :deep(li[data-list="bullet"] > .ql-ui::before) {
+  font-weight: 700;
+}
+
 /* 无序列表 - 使用与 Quill 相同的大圆点 '\2022'
 .article-content.ql-editor :deep(li[data-list="bullet"]::before) {
   content: '\2022';
@@ -250,25 +275,9 @@ export default {
   display: none;
 } */
 
-/* 有序列表 - 使用 CSS counter 实现数字编号 */
-.article-content.ql-editor :deep(li[data-list="ordered"]) {
-  counter-increment: list-counter;
-}
-
-.article-content.ql-editor :deep(li[data-list="ordered"]::before) {
-  content: counter(list-counter) '. ';
-  position: absolute;
-  left: 0;
-  width: 1.5em;
-  text-align: right;
-  color: inherit;
-}
-
-/* 重置有序列表计数器 */
-.article-content.ql-editor :deep(ol),
-.article-content.ql-editor :deep(li[data-list="ordered"]:first-child) {
-  counter-reset: list-counter;
-}
+/* 有序列表：已移除自定义 ::before + CSS counter 编号方案，
+   用于排查 Quill 原生有序列表无法正确显示的历史 bug（项目 1.1 时期遗留）。
+   移除后编号表现完全交给 Quill 官方 snow.css / 浏览器原生 ol 样式。 */
 
 /* 嵌套列表缩进 */
 .article-content.ql-editor :deep(li.ql-indent-1) {
@@ -318,29 +327,59 @@ export default {
   margin: 32px 0;
 }
 
-.article-footer {
-  padding: 20px 40px 32px;
-  border-top: 1px solid rgba(37, 99, 235, 0.1);
-}
-
+/* 返回首页按钮：fixed 固定在屏幕左下角（不随页面滚动），毛玻璃胶囊风格，配色沿用全站主题蓝 #2563eb */
 .back-btn {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 100;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  background: rgba(37, 99, 235, 0.08);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  border-radius: 8px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 999px;
   color: #2563eb;
+  font-family: 'Noto Serif SC', 'Roboto', sans-serif;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.18);
   transition: all 0.3s ease;
 }
 
 .back-btn:hover {
-  background: rgba(37, 99, 235, 0.15);
-  border-color: rgba(37, 99, 235, 0.3);
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.38);
+}
+
+.back-btn:active {
+  transform: translateY(0);
+}
+
+.back-arrow {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.back-btn:hover .back-arrow {
+  transform: translateX(-4px);
+}
+
+/* 移动端贴边距离收窄 */
+@media (max-width: 768px) {
+  .back-btn {
+    left: 16px;
+    bottom: 16px;
+    padding: 10px 18px;
+  }
 }
 
 .empty {

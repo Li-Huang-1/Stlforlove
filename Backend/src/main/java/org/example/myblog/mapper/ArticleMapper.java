@@ -1,27 +1,24 @@
 package org.example.myblog.mapper;
 
-import org.example.myblog.common.page.PageQuery;
-import org.example.myblog.domain.entity.Article;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.example.myblog.domain.dto.ArticleQueryDTO;
+import org.example.myblog.domain.entity.Article;
 import org.example.myblog.domain.vo.ArticleListDetailVO;
 import org.example.myblog.domain.vo.ArticleListVO;
 
-import java.util.List;
-
 @Mapper
-public interface ArticleMapper {
+public interface ArticleMapper extends BaseMapper<Article> {
 
-    int insertArticle(Article article);
+    /**
+     * 文章详情列表(含 content),支持按 includeDraft 过滤草稿
+     */
+    IPage<ArticleListDetailVO> queryArticleListDetail(IPage<ArticleListDetailVO> page, @Param("query") ArticleQueryDTO query);
 
-    int deleteById(int id);
-
-    int updateArticleById(Article article);
-
-    List<ArticleListDetailVO> queryArticleListDetail(PageQuery pageQuery);
-
-    List<ArticleListVO> queryArticleList(PageQuery pageQuery);
-
-    Article queryArticleDetailById(int id);
-
-    int countArticles();
+    /**
+     * 文章简略列表(不含 content)
+     */
+    IPage<ArticleListVO> queryArticleList(IPage<ArticleListVO> page, @Param("query") ArticleQueryDTO query);
 }

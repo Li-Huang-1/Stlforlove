@@ -1,15 +1,19 @@
 <template>
   <div id="app">
-    <NavBar v-if="showNavBar" />
+    <!-- 导航栏随认证相关页面（登录、后台）的进出一并淡入淡出 -->
+    <transition name="fade">
+      <NavBar v-if="showNavBar" />
+    </transition>
     <router-view v-slot="{ Component, route: currentRoute }">
-      <!-- 普通页面使用out-in过渡 -->
-      <transition v-if="!isAuthRoute" name="fade" mode="out-in">
-        <!-- :key 就是给每个元素/组件一个 身份证号 ，Vue 用它来区分不同的元素。
-        当 key 变化时，Vue 会销毁旧组件实例并创建新实例，而不是复用。 -->
-        <component :is="Component" :key="currentRoute.fullPath" />
+      <!-- 所有页面（含登录、后台等认证相关页面，以及路由守卫重定向跳转）统一使用 out-in 淡入淡出过渡。
+           注意：transition 的直接子节点必须是稳定的真实 DOM 元素，因此用 div 包裹动态组件，
+           并把 :key 放在 div 上（key 变化时 Vue 销毁旧 div、挂载新 div），
+           避免动态 component 直接作为 transition 子节点时切换异常导致页面空白。 -->
+      <transition name="fade" mode="out-in">
+        <div :key="currentRoute.fullPath" class="route-wrapper">
+          <component :is="Component" />
+        </div>
       </transition>
-      <!-- 认证相关页面（登录、后台）不使用过渡 -->
-      <component v-else :is="Component" :key="'auth-' + currentRoute.fullPath" />
     </router-view>
   </div>
 </template>
@@ -20,14 +24,10 @@ import { useRoute } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 
 const route = useRoute()
+// 认证相关页面（登录、后台）不显示导航栏
 const showNavBar = computed(() => {
   const noNavBarPaths = ['/login', '/admin']
   return !noNavBarPaths.some(p => route.path.startsWith(p))
-})
-
-// 判断当前是否是认证相关路由
-const isAuthRoute = computed(() => {
-  return route.path.startsWith('/login') || route.path.startsWith('/admin')
 })
 </script>
 
@@ -41,6 +41,12 @@ body {
 #app {
   min-height: 100vh;
   background-color: #1a202c;
+}
+
+/* 路由页面包裹层：复刻 #app 的最小高度兜底，保证短内容页面背景也能铺满视口；
+   本身为普通 block 元素，不影响各页面内部的 flex 等布局 */
+.route-wrapper {
+  min-height: 100vh;
 }
 
 .fade-enter-active,

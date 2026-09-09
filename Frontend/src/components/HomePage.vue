@@ -24,19 +24,19 @@
               <div class="intro-text">Hi! I'm 黎凰</div>
               <div class="logos-container">
                 <div class="logo-item">
-                  <a @click.prevent="showComingSoon()" title="技术栈">
+                  <router-link to="/articles/tech" title="技术栈">
                     <img src="@/assets/网络品牌树.png" alt="技术栈">
-                  </a>
+                  </router-link>
                 </div>
                 <div class="logo-item">
-                  <a @click.prevent="showComingSoon()" title="日志">
+                  <router-link to="/articles/log" title="日志">
                     <img src="@/assets/文件-2.png" alt="日志">
-                  </a>
+                  </router-link>
                 </div>
                 <div class="logo-item">
-                  <a @click.prevent="showComingSoon()" title="项目">
+                  <router-link to="/articles/project" title="项目">
                     <img src="@/assets/项目-1.png" alt="项目">
-                  </a>
+                  </router-link>
                 </div>
               </div>
               <div class="social-links-container">
@@ -126,7 +126,7 @@
             </div>
             <div class="cards-row-wrapper">
               <button class="card card-rectangle-top" @click="goToArticleList()">文  章</button>
-              <button class="card card-rectangle-top" @click="showComingSoon()">随  笔</button>
+              <button class="card card-rectangle-top" @click="goToMessageWall()">留 言 板</button>
               <button class="card card-rectangle-top" @click="showComingSoon()">杂  项</button>
             </div>
             <div class="cards-row-wrapper bottom-cards">
@@ -443,6 +443,9 @@ export default {
     },
     goToArticleList() {
       this.$router.push('/articles')
+    },
+    goToMessageWall() {
+      this.$router.push('/message-wall')
     },
     showComingSoon() {
       this.$message({
@@ -873,7 +876,7 @@ export default {
 .play-btn {
     width: 56px;
     height: 56px;
-    background: linear-gradient(135deg, #1d3d80 0%, #385fb2 100%);
+    background: linear-gradient(135deg, #3966a2 0%, #3257a7 100%);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 

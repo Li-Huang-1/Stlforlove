@@ -3,6 +3,10 @@ import HomePage from '@/components/HomePage.vue'
 import LoginPage from '@/components/Login.vue'
 import AdminPanel from '@/components/Admin.vue'
 import ArticleList from '@/components/ArticleList.vue'
+import TechArticleList from '@/components/TechArticleList.vue'
+import ProjectArticleList from '@/components/ProjectArticleList.vue'
+import LogArticleList from '@/components/LogArticleList.vue'
+import MessageWall from '@/components/MessageWall.vue'
 
 const routes = [
   {
@@ -45,6 +49,30 @@ const routes = [
     path: '/articles',
     name: 'ArticleList',
     component: ArticleList,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/articles/tech',
+    name: 'TechArticleList',
+    component: TechArticleList,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/articles/project',
+    name: 'ProjectArticleList',
+    component: ProjectArticleList,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/articles/log',
+    name: 'LogArticleList',
+    component: LogArticleList,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/message-wall',
+    name: 'MessageWall',
+    component: MessageWall,
     meta: { requiresAuth: false }
   },
 ]

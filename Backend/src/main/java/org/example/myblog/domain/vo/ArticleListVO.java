@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class ArticleListVO {
     private Integer id;
     private String title;
+    private String type;
     private LocalDateTime createTime;
     private Integer status;
     private String category;

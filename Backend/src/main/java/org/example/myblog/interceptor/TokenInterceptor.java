@@ -1,5 +1,6 @@
 package org.example.myblog.interceptor;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.example.myblog.domain.entity.User;
 import org.example.myblog.mapper.UserMapper;
 import org.example.myblog.utils.UserContext;
@@ -38,8 +39,12 @@ public class TokenInterceptor implements HandlerInterceptor {
         // 从第7个字符开始截取token
         String token = authorization.substring(7);
 
-        // 2. 根据 Token 查用户
-        User user = userMapper.queryByToken(token);
+        // 2. 构建 Token 查询条件并查询用户
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>()
+                .select(User::getId, User::getUsername, User::getToken, User::getAvatar)
+                .eq(User::getToken, token);
+
+        User user = userMapper.selectOne(queryWrapper);
 
         if (user == null) {
             response.setStatus(401);

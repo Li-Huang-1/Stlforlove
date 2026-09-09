@@ -3,8 +3,8 @@
     <!-- 页面头部 -->
     <header class="page-header">
       <div class="header-content">
-        <h1 class="page-title">文章列表</h1>
-        <p class="page-subtitle">探索我的技术分享与生活感悟</p>
+        <h1 class="page-title">{{ pageTitle }}</h1>
+        <p class="page-subtitle">{{ pageSubtitle }}</p>
       </div>
     </header>
 
@@ -18,11 +18,11 @@
           class="article-card"
           @click="goToArticle(article.id)"
         >
-          <!-- 封面图片 -->
+          <!-- 封面图片：v-lazy 懒加载，进入视口前显示占位图，不发起真实图片请求 -->
           <div class="article-cover">
-            <img 
-              v-if="article.coverUrl" 
-              :src="article.coverUrl" 
+            <img
+              v-if="article.coverUrl"
+              v-lazy="article.coverUrl"
               :alt="article.title"
               class="cover-image"
               @error="handleCoverError($event)"
@@ -35,10 +35,10 @@
           <!-- 文章内容 -->
           <div class="article-body">
             <div class="article-meta">
-              <span class="category-tag">{{ article.category || '未分类' }}</span>
-              <span class="status-tag" :class="article.status === 1 ? 'published' : 'draft'">
-                {{ article.status === 1 ? '已发布' : '草稿' }}
+              <span class="type-tag" :class="getTypeClass(article.type)">
+                {{ getTypeLabel(article.type) }}
               </span>
+              <span class="category-tag">{{ article.category || '未分类' }}</span>
             </div>
             <h2 class="article-title">{{ article.title }}</h2>
             <p class="article-date">{{ formatDate(article.createTime) }}</p>
@@ -53,7 +53,7 @@
         <!-- 空状态 -->
         <div v-if="articles.length === 0" class="empty-state">
           <span class="empty-icon">📄</span>
-          <p class="empty-text">暂无文章</p>
+          <p class="empty-text">暂无{{ pageTitle }}</p>
         </div>
       </div>
 
@@ -97,8 +97,35 @@
 <script>
 import request from '@/utils/request'
 
+const TYPE_LABELS = {
+  tech: '技术栈',
+  project: '项目',
+  log: '日志'
+}
+
+const TYPE_CLASSES = {
+  tech: 'type-tech',
+  project: 'type-project',
+  log: 'type-log'
+}
+
 export default {
   name: 'ArticleList',
+  props: {
+    // 文章类型过滤: tech / project / log / null(全部)
+    type: {
+      type: String,
+      default: null
+    },
+    pageTitle: {
+      type: String,
+      default: '文章列表'
+    },
+    pageSubtitle: {
+      type: String,
+      default: '探索我的技术分享与生活感悟'
+    }
+  },
   data() {
     return {
       articles: [],
@@ -114,15 +141,26 @@ export default {
     }
   },
   methods: {
+    getTypeLabel(type) {
+      return TYPE_LABELS[type] || '未分类'
+    },
+    getTypeClass(type) {
+      return TYPE_CLASSES[type] || 'type-default'
+    },
     async fetchArticles(page = 1) {
       try {
+        const data = {
+          pageNum: page,
+          pageSize: this.pageSize
+        }
+        if (this.type) {
+          data.type = this.type
+        }
+
         const response = await request({
           url: '/public/article/list',
           method: 'post',
-          data: {
-            pageNum: page,
-            pageSize: this.pageSize
-          }
+          data
         })
         
         // TableDataInfo 格式：{ rows: [], total: 0 }
@@ -244,26 +282,28 @@ export default {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
 }
 
-/* 封面容器 */
 .article-cover {
   width: 100%;
   height: 200px;
   position: relative;
-  /* 隐藏超出部分 */
   overflow: hidden;
 }
 
-/* 封面图片 */
 .cover-image {
   width: 100%;
   height: 100%;
-  /* 图片等比例缩放，保持原始比例 */
   object-fit: cover;
   transition: transform 0.5s ease;
 }
 
-.article-card:hover .cover-image {
-  /* 鼠标悬停时，图片缩放 1.1 倍 */
+/* 懒加载占位态：img 元素撑满封面区域并带浅底，占位 gif 以原始像素尺寸居中显示（object-fit:none，不放大、不发虚）；
+   真实图加载完成后该类由 v-lazy 指令移除 */
+.cover-image.lazy-loading {
+  object-fit: none;
+  background: linear-gradient(135deg, #e8f0fe 0%, #f8fafc 100%);
+}
+
+.article-card:hover .cover-image:not(.lazy-loading) {
   transform: scale(1.1);
 }
 
@@ -274,7 +314,6 @@ export default {
   justify-content: center;
   align-items: center;
   background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
-  display: none;
 }
 
 .placeholder-icon {
@@ -290,6 +329,31 @@ export default {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.type-tag {
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 12px;
+  color: #ffffff;
+}
+
+.type-tag.type-tech {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.type-tag.type-project {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.type-tag.type-log {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.type-tag.type-default {
+  background: linear-gradient(135deg, #999 0%, #666 100%);
 }
 
 .category-tag {
@@ -299,23 +363,6 @@ export default {
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: 12px;
-}
-
-.status-tag {
-  padding: 4px 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 12px;
-}
-
-.status-tag.published {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-}
-
-.status-tag.draft {
-  background: rgba(209, 213, 219, 0.5);
-  color: #6b7280;
 }
 
 .article-title {

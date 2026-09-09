@@ -1,58 +1,46 @@
 package org.example.myblog.service;
 
-import com.github.pagehelper.PageInfo;
-import org.example.myblog.common.page.PageQuery;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
+import org.example.myblog.domain.dto.ArticleQueryDTO;
 import org.example.myblog.domain.entity.Article;
 import org.example.myblog.domain.vo.ArticleListDetailVO;
 import org.example.myblog.domain.vo.ArticleListVO;
 
-public interface ArticleService {
+public interface IArticleService extends IService<Article> {
 
     /**
-     * 保存文章
-     * @param article
-     * @return
+     * 保存文章(返回影响行数)
      */
     int saveArticle(Article article);
 
     /**
      * 通过id删除文章
-     * @param id
-     * @return
      */
     int deleteArticleById(int id);
 
     /**
      * 通过id更新文章
-     * @param article
-     * @return
      */
     int updateArticleById(Article article);
 
     /**
-     * 查询文章详情列表
-     * @param page
-     * @return
+     * 查询文章详情列表(含 content)
      */
-    PageInfo<ArticleListDetailVO> queryArticleListDetail(PageQuery page);
+    IPage<ArticleListDetailVO> queryArticleListDetail(ArticleQueryDTO query);
 
     /**
-     * 查询文章简略列表
-     * @param page
-     * @return
+     * 查询文章简略列表(不含 content)
      */
-    PageInfo<ArticleListVO> queryArticleList(PageQuery page);
+    IPage<ArticleListVO> queryArticleList(ArticleQueryDTO query);
 
     /**
      * 通过id查询文章详情
-     * @param id
-     * @return
      */
     ArticleListDetailVO queryArticleDetailById(int id);
 
     /**
      * 查询已发布文章总数
-     * @return
      */
     int countArticles();
 }

@@ -1,83 +1,74 @@
 package org.example.myblog.service.impl;
 
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import org.example.myblog.common.page.PageQuery;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.example.myblog.domain.dto.ArticleQueryDTO;
 import org.example.myblog.domain.entity.Article;
 import org.example.myblog.domain.vo.ArticleListDetailVO;
 import org.example.myblog.domain.vo.ArticleListVO;
 import org.example.myblog.mapper.ArticleMapper;
-import org.example.myblog.service.ArticleService;
+import org.example.myblog.service.IArticleService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
-public class ArticleServiceImpl implements ArticleService {
+public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements IArticleService {
 
     @Autowired
-    private ArticleMapper articleMapper;
+    private ArticleMapper mapper;
 
     @Override
     public int saveArticle(Article article) {
-        return articleMapper.insertArticle(article);
+        // 返回受影响行数
+        return mapper.insert(article);
     }
 
     @Override
     public int deleteArticleById(int id) {
-        return articleMapper.deleteById(id);
+        return mapper.deleteById(id);
     }
 
     @Override
     public int updateArticleById(Article article) {
-        return articleMapper.updateArticleById(article);
+        return mapper.updateById(article);
     }
 
     @Override
-    public PageInfo<ArticleListDetailVO> queryArticleListDetail(PageQuery page) {
-
-        // 使用 PageHelper 设置分页参数（必须在查询前）
-        PageHelper.startPage(page.getPageNum(), page.getPageSize());
-
-        // 执行查询（PageHelper 会自动拦截并加上 LIMIT）
-        List<ArticleListDetailVO> articleList = articleMapper.queryArticleListDetail(page);
-
-        // 用 PageInfo 包装结果（包含总记录数、总页数等）
-        PageInfo<ArticleListDetailVO> pageInfo = new PageInfo<>(articleList);
-
-        return pageInfo;
+    public IPage<ArticleListDetailVO> queryArticleListDetail(ArticleQueryDTO query) {
+        Page<ArticleListDetailVO> page = new Page<>(query.getPageNum(), query.getPageSize());
+        return mapper.queryArticleListDetail(page, query);
     }
 
     @Override
-    public PageInfo<ArticleListVO> queryArticleList(PageQuery page) {
-
-        PageHelper.startPage(page.getPageNum(), page.getPageSize());
-
-        List<ArticleListVO> articleList = articleMapper.queryArticleList(page);
-
-        PageInfo<ArticleListVO> pageInfo = new PageInfo<>(articleList);
-
-        return pageInfo;
+    public IPage<ArticleListVO> queryArticleList(ArticleQueryDTO query) {
+        Page<ArticleListVO> page = new Page<>(query.getPageNum(), query.getPageSize());
+        return mapper.queryArticleList(page, query);
     }
 
     @Override
     public ArticleListDetailVO queryArticleDetailById(int id) {
-        // Mapper 返回 Entity
-        Article article = articleMapper.queryArticleDetailById(id);
+        Article article = mapper.selectById(id);
 
-        // 转换为 VO
+        if (article == null) {
+            return null;
+        }
+
         ArticleListDetailVO vo = new ArticleListDetailVO();
-
         BeanUtils.copyProperties(article, vo);
-
         return vo;
     }
 
     @Override
     public int countArticles() {
-        return articleMapper.countArticles();
+        // 构建查询条件:已发布文章(status=1)
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<Article>()
+                .eq(Article::getStatus, 1);
+
+        // 查询总数并转换为 int
+        return Math.toIntExact(mapper.selectCount(queryWrapper));
     }
 }

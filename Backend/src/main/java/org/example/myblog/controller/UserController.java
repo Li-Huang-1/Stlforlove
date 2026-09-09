@@ -6,7 +6,7 @@ import org.example.myblog.domain.dto.LoginDTO;
 import org.example.myblog.domain.entity.User;
 import org.example.myblog.domain.vo.LoginVO;
 import org.example.myblog.domain.vo.UserInfoVO;
-import org.example.myblog.service.UserService;
+import org.example.myblog.service.IUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController extends BaseController {
 
     @Autowired
-    private UserService userService;
+    private IUserService userService;
 
     /**
      * 登录接口

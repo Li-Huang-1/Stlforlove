@@ -2,18 +2,15 @@ package org.example.myblog.common.page;
 
 import lombok.Data;
 
+/**
+ * 通用分页参数
+ * 业务相关的查询字段请放到具体的 DTO(如 ArticleQueryDTO)中继承本类
+ */
 @Data
 public class PageQuery {
 
     private Integer pageNum;
 
     private Integer pageSize;
-
-    /**
-     * 是否包含草稿文章（status=0）
-     * true - 包含所有文章
-     * false/null - 只显示已发布文章（status=1）
-     */
-    private Boolean includeDraft;
 
 }

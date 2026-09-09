@@ -524,6 +524,12 @@ defineExpose({
   margin-bottom: 6px;
 }
 
+/* 无序列表圆点加粗：Quill 通过 .ql-ui::before 的 '\2022' 渲染圆点，
+   提升字重让圆点更粗更清晰，与文章详情页表现一致 */
+:deep(.ql-editor li[data-list="bullet"] > .ql-ui::before) {
+  font-weight: 700;
+}
+
 :deep(.ql-editor a) {
   color: #2563eb;
   text-decoration: none;

@@ -27,7 +27,7 @@ github:
   branch: ${GITHUB_BRANCH:main}
 
 # MyBatis配置
-mybatis:
+mybatis-plus:
 # Mapper XML文件位置
   mapper-locations: classpath:mapper/*.xml
   # 实体类别名包路径
@@ -37,7 +37,4 @@ mybatis:
     # 开启下划线转驼峰
     map-underscore-to-camel-case: true
     # 开启日志
-    log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
-
-pagehelper:
-  helper-dialect: mysql
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

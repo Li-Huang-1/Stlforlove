@@ -67,4 +67,13 @@ public class AjaxResult<T> {
         return new AjaxResult(code,msg,data);
     }
 
+    /**
+     * 响应失败示例
+     * @param msg 操作消息
+     * @return
+     */
+    public static AjaxResult error(String msg){
+        return new AjaxResult(500, msg,null);
+    }
+
 }

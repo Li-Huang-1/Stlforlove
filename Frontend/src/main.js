@@ -12,8 +12,11 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import '@enzedonline/quill-blot-formatter2/dist/css/quill-blot-formatter2.css'
 import App from './App.vue'
 import router from './router'
+import { lazyDirective } from './directives/lazy'
 
 const app = createApp(App)
 app.use(ElementPlus)
 app.use(router)
+// 全局注册图片懒加载指令：<img v-lazy="图片地址" />
+app.directive('lazy', lazyDirective)
 app.mount('#app')

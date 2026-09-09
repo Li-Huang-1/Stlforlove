@@ -81,6 +81,22 @@
           </div>
           
           <div class="panel-section">
+            <label class="section-label">文章类型</label>
+            <div class="type-options">
+              <button 
+                v-for="t in articleTypes" 
+                :key="t.value"
+                class="type-btn"
+                :class="{ active: selectedType === t.value }"
+                @click="selectedType = t.value"
+              >
+                {{ t.label }}
+              </button>
+            </div>
+            <span class="type-hint">当前类型：{{ getTypeLabel(selectedType) }}</span>
+          </div>
+
+          <div class="panel-section">
             <label class="section-label">文章分类</label>
             <input 
               v-model="selectedCategory"
@@ -96,6 +112,7 @@
                 :class="{ active: selectedCategory === cat.value }"
                 @click="selectedCategory = cat.value"
               >
+              <!-- <div :class="{ 类名: 判断条件 }"></div> -->
                 {{ cat.label }}
               </button>
             </div>
@@ -123,6 +140,18 @@ const articleId = ref(null)
 const isPanelExpanded = ref(true)
 const articleStatus = ref('草稿')
 const selectedCategory = ref('技术')
+const selectedType = ref('tech')
+
+const articleTypes = ref([
+  { label: '技术栈', value: 'tech' },
+  { label: '项目', value: 'project' },
+  { label: '日志', value: 'log' }
+])
+
+const getTypeLabel = (value) => {
+  const found = articleTypes.value.find(t => t.value === value)
+  return found ? found.label : '未分类'
+}
 
 // 封面上传相关状态
 const coverUrl = ref('')           // 封面图片URL
@@ -265,6 +294,9 @@ const loadArticle = async () => {
       if (res.category) {
         selectedCategory.value = res.category
       }
+      if (res.type) {
+        selectedType.value = res.type
+      }
       if (res.coverUrl) {
         coverUrl.value = res.coverUrl
       }
@@ -304,6 +336,7 @@ const saveArticle = async () => {
         id: articleId.value,
         title: articleTitle,
         content: content,
+        type: selectedType.value,
         status: statusValue,
         category: selectedCategory.value,
         coverUrl: coverUrl.value
@@ -314,6 +347,7 @@ const saveArticle = async () => {
       data = {
         title: articleTitle,
         content: content,
+        type: selectedType.value,
         status: statusValue,
         category: selectedCategory.value,
         coverUrl: coverUrl.value
@@ -763,6 +797,41 @@ const getContent = () => {
 }
 
 .category-hint {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.type-options {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  background: white;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.type-btn:hover {
+  border-color: rgba(37, 99, 235, 0.3);
+  color: #2563eb;
+}
+
+.type-btn.active {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(74, 144, 194, 0.15) 100%);
+  border-color: rgba(37, 99, 235, 0.4);
+  color: #2563eb;
+}
+
+.type-hint {
   font-size: 12px;
   color: #94a3b8;
 }
