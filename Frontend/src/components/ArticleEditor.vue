@@ -22,9 +22,6 @@
           <button class="btn btn-primary" @click="saveArticle">
             <span>{{ isEdit ? '更新文章' : '保存文章' }}</span>
           </button>
-          <button class="btn btn-secondary" @click="getContent">
-            <span>查看内容</span>
-          </button>
         </div>
       </div>
       
@@ -112,7 +109,6 @@
                 :class="{ active: selectedCategory === cat.value }"
                 @click="selectedCategory = cat.value"
               >
-              <!-- <div :class="{ 类名: 判断条件 }"></div> -->
                 {{ cat.label }}
               </button>
             </div>
@@ -128,7 +124,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import QuillEditor from '@/components/QuillEditor.vue'
-import request from '@/utils/request'
+import { articleApi, uploadApi } from '@/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -232,20 +228,10 @@ const uploadCover = async (file) => {
     formData.append('image', file)
     
     // 4. 发送上传请求（含进度回调）
-    const data = await request({
-      url: '/admin/upload',
-      method: 'post',
-      data: formData,
-        // 1. 创建请求配置对象
-        // 2. 发起 HTTP 请求（底层使用 XMLHttpRequest 或 fetch）
-        // 3. 浏览器传输数据时，会产生进度事件（ProgressEvent）
-        // 4. axios 监听到进度事件，调用传入的 onUploadProgress 回调
-        // 5. 你的回调函数更新 uploadProgress 状态
-        // 6. Vue 响应式系统触发视图更新，显示进度
-        onUploadProgress: (progressEvent) => {
-        if (progressEvent.total) {
-          uploadProgress.value = Math.round((progressEvent.loaded / progressEvent.total) * 100)
-        }
+    // onUploadProgress：axios 监听浏览器的上传进度事件，回调更新 uploadProgress
+    const data = await uploadApi.uploadImage(formData, (progressEvent) => {
+      if (progressEvent.total) {
+        uploadProgress.value = Math.round((progressEvent.loaded / progressEvent.total) * 100)
       }
     })
     
@@ -278,10 +264,7 @@ const loadArticle = async () => {
   articleId.value = parseInt(route.params.id)
   
   try {
-    const res = await request({
-      url: '/public/article/' + articleId.value,
-      method: 'get'
-    })
+    const res = await articleApi.getDetail(articleId.value)
     
     if (res) {
       title.value = res.title || ''
@@ -325,42 +308,23 @@ const saveArticle = async () => {
   }
   
   try {
-    let url, method, data
-    
     const statusValue = articleStatus.value === '草稿' ? 0 : 1
 
-    if (isEdit.value) {
-      url = '/admin/article/update'
-      method = 'post'
-      data = {
-        id: articleId.value,
-        title: articleTitle,
-        content: content,
-        type: selectedType.value,
-        status: statusValue,
-        category: selectedCategory.value,
-        coverUrl: coverUrl.value
-      }
-    } else {
-      url = '/admin/article/new'
-      method = 'post'
-      data = {
-        title: articleTitle,
-        content: content,
-        type: selectedType.value,
-        status: statusValue,
-        category: selectedCategory.value,
-        coverUrl: coverUrl.value
-      }
+    const data = {
+      title: articleTitle,
+      content: content,
+      type: selectedType.value,
+      status: statusValue,
+      category: selectedCategory.value,
+      coverUrl: coverUrl.value
     }
-    
-    const result = await request({
-      url: url,
-      method: method,
-      data: data
-    })
-    
-    console.log('保存结果:', result)
+
+    if (isEdit.value) {
+      await articleApi.update({ id: articleId.value, ...data })
+    } else {
+      await articleApi.add(data)
+    }
+
     alert(isEdit.value ? '✅ 更新成功！' : '✅ 保存成功！')
     
     router.push('/admin')
@@ -369,14 +333,6 @@ const saveArticle = async () => {
     console.error('保存失败:', error)
     alert('❌ 保存失败，请稍后重试')
   }
-}
-
-const getContent = () => {
-  const content = editorRef.value?.getContent?.() || editorRef.value?.content?.value
-  console.log('标题:', title.value)
-  console.log('内容:', content)
-  console.log('状态:', articleStatus.value)
-  console.log('分类:', selectedCategory.value)
 }
 </script>
 
@@ -469,18 +425,6 @@ const getContent = () => {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
-}
-
-.btn-secondary {
-  background: white;
-  color: #64748b;
-  border: 1px solid rgba(37, 99, 235, 0.2);
-}
-
-.btn-secondary:hover {
-  background: rgba(37, 99, 235, 0.03);
-  color: #2563eb;
-  border-color: rgba(37, 99, 235, 0.3);
 }
 
 .btn-icon {

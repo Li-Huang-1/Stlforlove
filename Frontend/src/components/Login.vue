@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import request from '@/utils/request'
+import { userApi } from '@/api'
 // Vue 组件配置对象
 export default {
   // 组件名称（用于调试和递归引用）
@@ -124,13 +124,9 @@ export default {
       try {
         // 3. 调用后端登录接口，传入用户名和密码
         // await：等待异步请求完成，获取返回结果
-        const response = await request({
-          url: '/public/user/login',
-          method: 'post',
-          data: {
+        const response = await userApi.login({
           username: this.form.username,  // 从表单数据中获取用户名
           password: this.form.password   // 从表单数据中获取密码
-          }
         })
         
         // 4. 登录成功后，保存 Token 到 sessionStorage

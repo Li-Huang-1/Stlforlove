@@ -5,7 +5,7 @@
 
     <!-- 文章详情列表(含 content) -->
     <select id="queryArticleListDetail" resultType="org.example.myblog.domain.vo.ArticleListDetailVO">
-        SELECT id, title, content, type, create_time, status, category, cover_url
+        SELECT id, title, content, type, create_time, update_time, status, category, cover_url
         FROM articles
         <where>
             <if test="query.includeDraft == null or query.includeDraft == false">
@@ -13,6 +13,12 @@
             </if>
             <if test="query.type != null and query.type != ''">
                 AND type = #{query.type}
+            </if>
+            <if test="query.category != null and query.category != ''">
+                AND category = #{query.category}
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND title LIKE CONCAT('%', #{query.keyword}, '%')
             </if>
         </where>
         ORDER BY create_time DESC
@@ -20,7 +26,7 @@
 
     <!-- 文章简略列表(不含 content) -->
     <select id="queryArticleList" resultType="org.example.myblog.domain.vo.ArticleListVO">
-        SELECT id, title, type, create_time, status, category, cover_url
+        SELECT id, title, type, create_time, update_time, status, category, cover_url
         FROM articles
         <where>
             <if test="query.includeDraft == null or query.includeDraft == false">
@@ -28,6 +34,12 @@
             </if>
             <if test="query.type != null and query.type != ''">
                 AND type = #{query.type}
+            </if>
+            <if test="query.category != null and query.category != ''">
+                AND category = #{query.category}
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND title LIKE CONCAT('%', #{query.keyword}, '%')
             </if>
         </where>
         ORDER BY create_time DESC

@@ -19,6 +19,8 @@ body {
 html {
   scroll-behavior: smooth;
   background-color: #1a202c;
+  /* 始终为滚动条预留位置，避免页面切换（短页无滚动条 → 长页有滚动条）时宽度抖动 */
+  scrollbar-gutter: stable;
 }
 
 body {

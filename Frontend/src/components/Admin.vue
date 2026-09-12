@@ -155,7 +155,7 @@
 </template>
 
 <script>
-import request from '@/utils/request'
+import { articleApi, userApi, visitorApi } from '@/api'
 
 export default {
   name: 'AdminPanel',
@@ -197,11 +197,7 @@ export default {
   methods: {
     async fetchUserInfo() {
       try {
-        const res = await request({
-          url: '/public/user/info',
-          method: 'get'
-        })
-        console.log('用户信息:', res)
+        const res = await userApi.getInfo()
         if (res.avatar) {
           this.userAvatar = res.avatar
         }
@@ -225,20 +221,12 @@ export default {
     },
     async fetchArticles() {
       try {
-        const res = await request({
-          url: '/public/article/list',
-          method: 'post',
-          data: {
-            pageNum: 1,
-            pageSize: 4,
-            includeDraft: true
-          }
+        const res = await articleApi.getList({
+          pageNum: 1,
+          pageSize: 4,
+          includeDraft: true
         })
-
-        // todo 不知道为什么返回的原始响应是空的 
-        // 原因是后端返回的格式是{ rows: [] } 而不是直接返回文章列表，而封装的axios不处理rows字段
-        console.log('原始响应:', res)
-        // 根据后端返回格式调整
+        // 后端返回格式为 { rows: [] }，取 rows 作为文章列表
         this.recentArticles = res.rows || []
         this.recentArticles.forEach(article => {
           article.createTime = new Date(article.createTime).toLocaleDateString('zh-CN')
@@ -246,17 +234,13 @@ export default {
         this.recentArticles.forEach(article => {
           article.status = article.status === 1 ? '已发布' : '草稿'
         })
-        console.log('文章列表:', this.recentArticles)
       } catch (error) {
         console.error('加载文章失败:', error)
       }
     },
     async deleteArticle(article) {
       try {
-        await request({
-          url: `/admin/article/delete/${article.id}`,
-          method: 'delete'
-        })
+        await articleApi.remove(article.id)
         // 再次刷新文章列表，确保删除后的文章列表是最新状态
         this.fetchArticles()
         // $message 是 Quasar 提供的消息提示组件，用于显示成功、错误等消息
@@ -277,10 +261,7 @@ export default {
     },
     async loadArticleCount() {
       try {
-        const data = await request({
-          url: '/public/article/count',
-          method: 'get'
-        })
+        const data = await articleApi.getCount()
         this.articleCount = data || 0
       } catch (error) {
         console.error('获取文章总数失败:', error)
@@ -294,17 +275,11 @@ export default {
         
         if (hasCounted) {
           // 已经计数过，只获取当前计数
-          const data = await request({
-            url: '/public/visitor/count',
-            method: 'get'
-          })
+          const data = await visitorApi.getCount()
           this.visitorCount = data?.count || 1
         } else {
           // 首次访问，增加计数并标记
-          const data = await request({
-            url: '/public/visitor/increment',
-            method: 'get'
-          })
+          const data = await visitorApi.increment()
           this.visitorCount = data?.count || 1
           // 标记已计数
           sessionStorage.setItem('visitor_counted', 'true')

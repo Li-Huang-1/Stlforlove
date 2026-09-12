@@ -16,7 +16,7 @@
 import { ref, onBeforeUnmount } from 'vue'
 import { Quill, QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import request from '@/utils/request'
+import { uploadApi } from '@/api'
 
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
@@ -238,12 +238,8 @@ const handlePaste = async (event) => {
         const formData = new FormData()
         formData.append('image', file)
         
-        const data = await request({
-          url: '/admin/upload',
-          method: 'post',
-          data: formData
-        })
-        
+        const data = await uploadApi.uploadImage(formData)
+
         const imageUrl = data.url || data.data?.url || data
         
         if (!imageUrl) {
@@ -307,11 +303,7 @@ const handleImageUpload = () => {
       const formData = new FormData()
       formData.append('image', file)
 
-      const data = await request({
-        url: '/admin/upload',
-        method: 'post',
-        data: formData
-      })
+      const data = await uploadApi.uploadImage(formData)
 
       // 处理上传结果
       const imageUrl = data.url || data.data?.url || data

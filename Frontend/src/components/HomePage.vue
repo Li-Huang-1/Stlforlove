@@ -127,7 +127,7 @@
             <div class="cards-row-wrapper">
               <button class="card card-rectangle-top" @click="goToArticleList()">文  章</button>
               <button class="card card-rectangle-top" @click="goToMessageWall()">留 言 板</button>
-              <button class="card card-rectangle-top" @click="showComingSoon()">杂  项</button>
+              <button class="card card-rectangle-top" @click="showComingSoon()">友 链</button>
             </div>
             <div class="cards-row-wrapper bottom-cards">
               <div class="card card-square">
@@ -136,10 +136,19 @@
                   <p>敬请期待</p>
                 </div>
               </div>
-              <div class="card card-rectangle">
-                <div class="card-content">
-                  <h3>功能开发中</h3>
-                  <p>敬请期待</p>
+              <div class="card card-rectangle promo-card" @click="goToPromoArticle">
+                <img
+                  src="https://cdn.jsdmirror.com/gh/Li-Huang-1/my-blog-images@main/img/20260727_220032_705f5318_Image_1765897337755.jpg"
+                  alt="博客更新日志"
+                  class="promo-image"
+                />
+                <div class="promo-info">
+                  <div class="promo-meta">
+                    <span class="promo-tag">UPDATE</span>
+                    <span class="promo-date">2026.09.09</span>
+                  </div>
+                  <h3 class="promo-title">博客更新日志</h3>
+                  <p class="promo-subtitle">v1.5 发布 · 留言板 · 优化 · 懒加载</p>
                 </div>
               </div>
             </div>
@@ -203,7 +212,7 @@
 </template>
 
 <script>
-import request from '@/utils/request'
+import { articleApi, visitorApi } from '@/api'
 
 export default {
   name: 'HomePage',
@@ -447,6 +456,9 @@ export default {
     goToMessageWall() {
       this.$router.push('/message-wall')
     },
+    goToPromoArticle() {
+      this.$router.push('/article/23')
+    },
     showComingSoon() {
       this.$message({
         message: '功能开发中，敬请期待',
@@ -456,10 +468,7 @@ export default {
     },
     async loadArticleCount() {
       try {
-        const data = await request({
-          url: '/public/article/count',
-          method: 'get'
-        })
+        const data = await articleApi.getCount()
         this.articleCount = data || 0
       } catch (error) {
         console.error('获取文章总数失败:', error)
@@ -473,17 +482,11 @@ export default {
         
         if (hasCounted) {
           // 已经计数过，只获取当前计数
-          const data = await request({
-            url: '/public/visitor/count',
-            method: 'get'
-          })
+          const data = await visitorApi.getCount()
           this.visitorCount = data?.count || 1
         } else {
           // 首次访问，增加计数并标记
-          const data = await request({
-            url: '/public/visitor/increment',
-            method: 'get'
-          })
+          const data = await visitorApi.increment()
           this.visitorCount = data?.count || 1
           // 标记已计数
           sessionStorage.setItem('visitor_counted', 'true')
@@ -995,6 +998,91 @@ export default {
 
 .bottom-cards .card-rectangle {
     height: 218px;
+}
+
+.promo-card {
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    padding: 0;
+    border-color: rgba(65, 102, 140, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.promo-card:hover {
+    transform: translateY(-4px);
+}
+
+.promo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 65% center;
+    transition: transform 0.4s ease;
+}
+
+.promo-card:hover .promo-image {
+    transform: scale(1.05);
+}
+
+.promo-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 18px 20px;
+    background: linear-gradient(transparent 0%, rgba(0, 0, 0, 0.75) 60%, rgba(0, 0, 0, 0.9) 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.promo-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.promo-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    border-radius: 4px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+.promo-date {
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.5px;
+}
+
+.promo-title {
+    font-family: 'Noto Serif SC', 'Roboto', 'Georgia', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    margin: 0;
+    line-height: 1.3;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.promo-subtitle {
+    font-family: 'Noto Serif SC', 'Roboto', 'Georgia', serif;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    line-height: 1.4;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .bottom-cards .card-content {

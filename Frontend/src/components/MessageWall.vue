@@ -66,7 +66,7 @@
 </template>
 
 <script>
-import request from '@/utils/request'
+import { messageApi } from '@/api'
 
 // 头像渐变色盘：根据昵称首字符稳定取色
 const AVATAR_COLORS = [
@@ -99,10 +99,7 @@ export default {
     // 加载留言列表（后端按创建时间倒序返回）
     async loadMessages() {
       try {
-        const data = await request({
-          url: '/public/message/list',
-          method: 'get'
-        })
+        const data = await messageApi.getList()
         this.messages = data || []
       } catch (error) {
         console.error('获取留言列表失败:', error)
@@ -123,11 +120,7 @@ export default {
       }
       try {
         // 后端返回新插入的留言对象（含真实 id 与 createTime）
-        const saved = await request({
-          url: '/public/message',
-          method: 'post',
-          data: { nickname, content }
-        })
+        const saved = await messageApi.add({ nickname, content })
         // 插入列表头部（最新留言在最前）
         if (saved) {
           this.messages.unshift(saved)

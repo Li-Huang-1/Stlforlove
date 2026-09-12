@@ -5,11 +5,10 @@
       <NavBar v-if="showNavBar" />
     </transition>
     <router-view v-slot="{ Component, route: currentRoute }">
-      <!-- 所有页面（含登录、后台等认证相关页面，以及路由守卫重定向跳转）统一使用 out-in 淡入淡出过渡。
-           注意：transition 的直接子节点必须是稳定的真实 DOM 元素，因此用 div 包裹动态组件，
-           并把 :key 放在 div 上（key 变化时 Vue 销毁旧 div、挂载新 div），
-           避免动态 component 直接作为 transition 子节点时切换异常导致页面空白。 -->
-      <transition name="fade" mode="out-in">
+      <!-- 所有页面统一使用 out-in 淡入淡出：旧页先淡出，新页再淡入，避免两页同时存在的布局跳动。
+           transition 的直接子节点必须是稳定的真实 DOM 元素，因此用 div 包裹动态组件，
+           并把 :key 放在 div 上（key 变化时 Vue 销毁旧 div、挂载新 div）。 -->
+      <transition name="fade" mode="out-in" appear>
         <div :key="currentRoute.fullPath" class="route-wrapper">
           <component :is="Component" />
         </div>

@@ -10,6 +10,7 @@ public class ArticleListVO {
     private String title;
     private String type;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
     private Integer status;
     private String category;
     private String coverUrl;

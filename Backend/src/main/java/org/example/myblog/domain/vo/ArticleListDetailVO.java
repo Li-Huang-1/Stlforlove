@@ -11,6 +11,7 @@ public class ArticleListDetailVO {
     private String type;
     private String content;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
     private Integer status;
     private String category;
     private String coverUrl;

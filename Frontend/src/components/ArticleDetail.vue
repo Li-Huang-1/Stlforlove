@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import request from '@/utils/request'
+import { articleApi } from '@/api'
 import { setupLazyImages, teardownLazyImages } from '@/directives/lazy'
 
 export default {
@@ -56,10 +56,7 @@ export default {
     async fetchArticle() {
       this.loading = true
       try {
-        const res = await request({
-          url: `/public/article/${this.articleId}`,
-          method: 'get'
-        })
+        const res = await articleApi.getDetail(this.articleId)
         this.article = res.data || res
         // 正文通过 v-html 渲染，DOM 更新后对其中的图片批量启用懒加载
         this.$nextTick(() => {

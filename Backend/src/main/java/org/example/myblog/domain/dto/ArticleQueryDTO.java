@@ -23,4 +23,10 @@ public class ArticleQueryDTO extends PageQuery {
      */
     private String type;
 
+    /** 标题关键词（模糊搜索） */
+    private String keyword;
+
+    /** 分类标签（精确匹配 category） */
+    private String category;
+
 }
