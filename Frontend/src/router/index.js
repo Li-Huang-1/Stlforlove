@@ -7,6 +7,7 @@ import TechArticleList from '@/components/TechArticleList.vue'
 import ProjectArticleList from '@/components/ProjectArticleList.vue'
 import LogArticleList from '@/components/LogArticleList.vue'
 import MessageWall from '@/components/MessageWall.vue'
+import FriendLinks from '@/components/FriendLinks.vue'
 
 const routes = [
   {
@@ -73,6 +74,12 @@ const routes = [
     path: '/message-wall',
     name: 'MessageWall',
     component: MessageWall,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/friend-links',
+    name: 'FriendLinks',
+    component: FriendLinks,
     meta: { requiresAuth: false }
   },
 ]

@@ -127,7 +127,7 @@
             <div class="cards-row-wrapper">
               <button class="card card-rectangle-top" @click="goToArticleList()">文  章</button>
               <button class="card card-rectangle-top" @click="goToMessageWall()">留 言 板</button>
-              <button class="card card-rectangle-top" @click="showComingSoon()">友 链</button>
+              <button class="card card-rectangle-top" @click="goToFriendLinks()">友 链</button>
             </div>
             <div class="cards-row-wrapper bottom-cards">
               <div class="card card-square">
@@ -148,7 +148,7 @@
                     <span class="promo-date">2026.09.09</span>
                   </div>
                   <h3 class="promo-title">博客更新日志</h3>
-                  <p class="promo-subtitle">v1.5 发布 · 留言板 · 优化 · 懒加载</p>
+                  <p class="promo-subtitle">v1.7 发布 · 友链 · 优化 · 懒加载</p>
                 </div>
               </div>
             </div>
@@ -456,15 +456,11 @@ export default {
     goToMessageWall() {
       this.$router.push('/message-wall')
     },
+    goToFriendLinks() {
+      this.$router.push('/friend-links')
+    },
     goToPromoArticle() {
       this.$router.push('/article/23')
-    },
-    showComingSoon() {
-      this.$message({
-        message: '功能开发中，敬请期待',
-        type: 'info',
-        duration: 2000
-      })
     },
     async loadArticleCount() {
       try {

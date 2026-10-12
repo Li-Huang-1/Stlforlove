@@ -79,7 +79,7 @@
           </div>
         </div>
         
-        <div class="content-section">
+        <div v-if="activeMenu !== 'links'" class="content-section">
           <div class="section-header">
             <h3 class="section-title">最近文章</h3>
             <button class="add-btn" @click="handleAddArticle">+ 新增文章</button>
@@ -120,7 +120,70 @@
           </div>
         </div>
         
-        <div class="content-section">
+        <!-- 友链管理：仅当侧栏选中「友链管理」时显示 -->
+        <div v-if="activeMenu === 'links'" class="content-section">
+          <div class="section-header">
+            <h3 class="section-title">友链管理</h3>
+          </div>
+
+          <!-- 新增友链表单 -->
+          <div class="settings-form" style="margin-bottom: 24px;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">站点名称</label>
+                <input v-model="friendLinkForm.name" type="text" class="form-input" placeholder="例如：StLforLove" maxlength="50" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">站点链接</label>
+                <input v-model="friendLinkForm.url" type="text" class="form-input" placeholder="https://..." maxlength="255" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">站点图标（可选）</label>
+                <input v-model="friendLinkForm.logo" type="text" class="form-input" placeholder="图标图片链接，留空则显示名称首字" maxlength="255" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">站点描述（可选）</label>
+                <input v-model="friendLinkForm.description" type="text" class="form-input" placeholder="一句话介绍该站点" maxlength="100" />
+              </div>
+            </div>
+            <button class="save-btn" @click="submitFriendLink">添加友链</button>
+          </div>
+
+          <!-- 友链列表 -->
+          <div class="article-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>站点名称</th>
+                  <th>站点链接</th>
+                  <th>站点描述</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="friendLinks.length === 0">
+                  <td colspan="4" style="text-align: center; padding: 40px; color: #999;">
+                    🔗 暂无友链，通过上方表单添加
+                  </td>
+                </tr>
+                <tr v-for="link in friendLinks" :key="link.id">
+                  <td class="article-title">{{ link.name }}</td>
+                  <td>
+                    <a :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.url }}</a>
+                  </td>
+                  <td>{{ link.description || '-' }}</td>
+                  <td class="actions">
+                    <button class="action-btn delete" @click="deleteFriendLink(link)">🗑️</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div v-if="activeMenu !== 'links'" class="content-section">
           <div class="section-header">
             <h3 class="section-title">系统设置</h3>
           </div>
@@ -155,7 +218,7 @@
 </template>
 
 <script>
-import { articleApi, userApi, visitorApi } from '@/api'
+import { articleApi, userApi, visitorApi, friendLinkApi } from '@/api'
 
 export default {
   name: 'AdminPanel',
@@ -165,13 +228,21 @@ export default {
       menuItems: [
         { id: 'dashboard', icon: '📊', label: '数据统计' },
         { id: 'articles', icon: '📝', label: '文章管理' },
+        { id: 'links', icon: '🔗', label: '友链管理' },
         { id: 'comments', icon: '💬', label: '评论管理' },
         { id: 'settings', icon: '⚙️', label: '系统设置' }
       ],
       recentArticles: [],
       userAvatar: '',
       articleCount: 0,
-      visitorCount: 1
+      visitorCount: 1,
+      friendLinks: [],
+      friendLinkForm: {
+        name: '',
+        url: '',
+        logo: '',
+        description: ''
+      }
     }
   },
   computed: {
@@ -179,6 +250,7 @@ export default {
       const titles = {
         dashboard: '数据统计',
         articles: '文章管理',
+        links: '友链管理',
         comments: '评论管理',
         settings: '系统设置'
       }
@@ -188,6 +260,7 @@ export default {
       const subtitles = {
         dashboard: '查看网站数据概览',
         articles: '管理您的文章内容',
+        links: '管理友情链接站点',
         comments: '管理用户评论',
         settings: '配置网站参数'
       }
@@ -268,6 +341,74 @@ export default {
         this.articleCount = 0
       }
     },
+    // 加载友链列表
+    async fetchFriendLinks() {
+      try {
+        const data = await friendLinkApi.getList()
+        this.friendLinks = data || []
+      } catch (error) {
+        console.error('加载友链失败:', error)
+      }
+    },
+    // 提交新增友链
+    async submitFriendLink() {
+      const name = this.friendLinkForm.name.trim()
+      const url = this.friendLinkForm.url.trim()
+      if (!name) {
+        this.$message.warning('请输入站点名称')
+        return
+      }
+      if (!url) {
+        this.$message.warning('请输入站点链接')
+        return
+      }
+      if (!/^https?:\/\//i.test(url)) {
+        this.$message.warning('站点链接需以 http:// 或 https:// 开头，例如 https://www.example.com')
+        return
+      }
+      try {
+        await friendLinkApi.add({
+          name,
+          url,
+          logo: this.friendLinkForm.logo.trim(),
+          description: this.friendLinkForm.description.trim()
+        })
+        this.$message({
+          message: '友链添加成功',
+          type: 'success',
+          showClose: true
+        })
+        // 清空表单并刷新列表
+        this.friendLinkForm = { name: '', url: '', logo: '', description: '' }
+        this.fetchFriendLinks()
+      } catch (error) {
+        // request 拦截器已 reject(Error(res.msg))，error.message 即后端校验错误消息
+        this.$message({
+          message: error.message || '友链添加失败',
+          type: 'error',
+          showClose: true
+        })
+      }
+    },
+    // 删除友链
+    async deleteFriendLink(link) {
+      try {
+        await friendLinkApi.remove(link.id)
+        this.fetchFriendLinks()
+        this.$message({
+          message: '删除成功',
+          type: 'success',
+          showClose: true
+        })
+      } catch (error) {
+        console.error('删除失败:', error)
+        this.$message({
+          message: '删除失败',
+          type: 'error',
+          showClose: true
+        })
+      }
+    },
     async loadVisitorCount() {
       try {
         // 检查当前浏览器会话是否已经计数
@@ -296,6 +437,7 @@ export default {
     this.fetchUserInfo()
     this.loadArticleCount()
     this.loadVisitorCount()
+    this.fetchFriendLinks()
   }
 }
 </script>
